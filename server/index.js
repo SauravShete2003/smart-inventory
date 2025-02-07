@@ -32,7 +32,10 @@ app.use(
 
 const mongoDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URL);
+    await mongoose.connect(process.env.MONGO_URL,{
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     console.log("✅ MongoDB Connected Successfully");
   } catch (error) {
     console.error("❌ MongoDB Connection Error:", error.message);
