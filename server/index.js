@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
-import { configDotenv } from "dotenv";
-configDotenv();
+import dotenv from "dotenv";
+dotenv.config();
 import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from 'url';
