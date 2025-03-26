@@ -106,7 +106,7 @@ const Sales: React.FC = () => {
 
   return (
     <div className="flex flex-col lg:flex-row">
-      <Sidebar />
+      {/* <Sidebar /> */}
       <div className="flex-1 w-full py-6 sm:px-6 lg:px-8">
         <Navbar />
         <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center mt-3">

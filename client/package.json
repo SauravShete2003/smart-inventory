@@ -10,6 +10,7 @@
     "axios": "^1.7.9",
     "chart.js": "^4.4.7",
     "cra-template": "1.2.0",
+    "lucide-react": "^0.483.0",
     "postcss": "^8.5.2",
     "postcss-flexbugs-fixes": "^5.0.2",
     "react": "^19.0.0",
