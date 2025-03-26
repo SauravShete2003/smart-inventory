@@ -22,7 +22,7 @@ const App: React.FC = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route
-              path="/"
+              path="/*"
               element={
                 <PrivateRoute>
                   <Dashboard />
@@ -30,7 +30,7 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/inventory"
+              path="/inventory/*"
               element={
                 <PrivateRoute>
                   <Inventory />
@@ -38,7 +38,7 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/sales"
+              path="/sales/*"
               element={
                 <PrivateRoute>
                   <Sales  />
@@ -46,7 +46,7 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/reports"
+              path="/reports/*"
               element={
                 <PrivateRoute>
                   <Reports />
@@ -62,7 +62,7 @@ const App: React.FC = () => {
               }
             />
             <Route 
-              path="/settings"
+              path="/settings/*"
               element={
                 <PrivateRoute>
                   <Settings />
@@ -70,7 +70,7 @@ const App: React.FC = () => {
               }
             />
             <Route 
-              path="/analytics"
+              path="/analytics/*"
               element={
                 <PrivateRoute>
                   <Analytics />
