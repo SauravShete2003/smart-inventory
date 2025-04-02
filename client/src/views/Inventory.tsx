@@ -4,7 +4,6 @@ import api from "../utils/api";
 import toast, { Toaster } from "react-hot-toast";
 import { getJwtToken } from "../utils/common";
 import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
 import { FaPlus, FaSearch, FaEdit, FaTrash, FaExclamationTriangle, FaBoxOpen, FaFilter, FaTimes, FaSave } from "react-icons/fa";
 
 interface InventoryItem {

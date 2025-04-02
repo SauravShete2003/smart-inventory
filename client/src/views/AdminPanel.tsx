@@ -41,7 +41,7 @@ const AdminPanel: React.FC = () => {
             }
 
             try {
-                const response = await api.get("/dashboard/stats", {
+                const response = await api.get("/dashboard", {
                     headers: { Authorization: token }
                 }).catch(error => {
                     if (error.response && error.response.status === 404) {
@@ -51,7 +51,7 @@ const AdminPanel: React.FC = () => {
                                 totalUsers: 24,
                                 totalInventory: 156,
                                 pendingOrders: 8,
-                                lowStockItems: 12
+                                lowStockItems: 13
                             }
                         };
                     }

@@ -17,7 +17,6 @@ import { Bar, Doughnut, Line } from "react-chartjs-2";
 import { getJwtToken } from "../utils/common";
 import toast, { Toaster } from "react-hot-toast";
 import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
 import { FaBoxOpen, FaChartLine, FaUsers, FaMoneyBillWave, FaRegCalendarCheck } from "react-icons/fa";
 
 ChartJS.register(

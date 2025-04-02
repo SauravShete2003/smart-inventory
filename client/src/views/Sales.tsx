@@ -3,7 +3,28 @@ import api from "../utils/api";
 import { getJwtToken } from "../utils/common";
 import toast, { Toaster } from "react-hot-toast";
 import Navbar from "../components/Navbar";
-import { FaPlus, FaShoppingCart, FaChartLine, FaBox, FaMoneyBillWave, FaCalendarAlt } from 'react-icons/fa';
+import { FaPlus, FaShoppingCart, FaChartLine, FaBox, FaMoneyBillWave, FaCalendarAlt, FaSearch } from 'react-icons/fa';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 // Type definitions
 interface InventoryItem {
@@ -11,6 +32,7 @@ interface InventoryItem {
   name: string;
   price?: number;
   category?: string;
+  quantity: number;
 }
 
 interface Sale {
@@ -43,12 +65,18 @@ const Sales: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [timeFilter, setTimeFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [saleSummary, setSaleSummary] = useState<SaleSummary>({
     totalSales: 0,
     totalItems: 0,
     averageOrder: 0,
     monthlySales: 0
   });
+  const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
+  const [formErrors, setFormErrors] = useState<{
+    itemId?: string;
+    quantity?: string;
+  }>({});
 
   // Reusable function for API fetching
   const fetchData = async () => {
@@ -68,12 +96,12 @@ const Sales: React.FC = () => {
         // Mock inventory data if API fails
         return { 
           data: [
-            { _id: "1", name: "Laptop", price: 1200, category: "Electronics" },
-            { _id: "2", name: "Smartphone", price: 800, category: "Electronics" },
-            { _id: "3", name: "Desk Chair", price: 250, category: "Furniture" },
-            { _id: "4", name: "Coffee Maker", price: 100, category: "Appliances" },
-            { _id: "5", name: "Headphones", price: 150, category: "Electronics" },
-            { _id: "6", name: "Monitor", price: 300, category: "Electronics" },
+            { _id: "1", name: "Laptop", price: 1200, category: "Electronics", quantity: 10 },
+            { _id: "2", name: "Smartphone", price: 800, category: "Electronics", quantity: 15 },
+            { _id: "3", name: "Desk Chair", price: 250, category: "Furniture", quantity: 20 },
+            { _id: "4", name: "Coffee Maker", price: 100, category: "Appliances", quantity: 8 },
+            { _id: "5", name: "Headphones", price: 150, category: "Electronics", quantity: 25 },
+            { _id: "6", name: "Monitor", price: 300, category: "Electronics", quantity: 12 },
           ] 
         };
       });
@@ -162,16 +190,38 @@ const Sales: React.FC = () => {
     });
   };
 
+  // Validate form
+  const validateForm = () => {
+    const errors: { itemId?: string; quantity?: string } = {};
+    
+    if (!newSale.itemId) {
+      errors.itemId = "Please select a product";
+    }
+    
+    if (!newSale.quantity || newSale.quantity <= 0) {
+      errors.quantity = "Quantity must be greater than zero";
+    } else if (selectedItem && newSale.quantity > (selectedItem.quantity || 999)) {
+      errors.quantity = "Quantity exceeds available stock";
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const token = getJwtToken();
-    if (!token) {
-      toast.error("Authentication token is missing!");
+    
+    if (!validateForm()) {
       return;
     }
 
-    if (newSale.quantity <= 0) {
-      toast.error("Quantity must be greater than zero!");
+    setShowConfirmation(true);
+  };
+
+  const confirmSale = async () => {
+    const token = getJwtToken();
+    if (!token) {
+      toast.error("Authentication token is missing!");
       return;
     }
 
@@ -188,6 +238,7 @@ const Sales: React.FC = () => {
         quantity: 0,
       });
       setSelectedItem(null);
+      setShowConfirmation(false);
       toast.success("Sale recorded successfully!");
       fetchData(); // Refresh data after successful submission
     } catch (error: any) {
@@ -208,6 +259,80 @@ const Sales: React.FC = () => {
   // Calculate estimated price and total
   const estimatedPrice = selectedItem?.price || 0;
   const estimatedTotal = estimatedPrice * newSale.quantity;
+
+  // Filter sales based on search query and time filter
+  const filteredSales = sales.filter(sale => {
+    const matchesSearch = sale.item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const saleDate = new Date(sale.saleDate);
+    const now = new Date();
+    
+    let matchesTimeFilter = true;
+    switch (timeFilter) {
+      case 'month':
+        matchesTimeFilter = saleDate.getMonth() === now.getMonth() && 
+                          saleDate.getFullYear() === now.getFullYear();
+        break;
+      case 'week':
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        matchesTimeFilter = saleDate >= weekAgo;
+        break;
+      default:
+        matchesTimeFilter = true;
+    }
+    
+    return matchesSearch && matchesTimeFilter;
+  });
+
+  // Prepare data for the sales trend chart
+  const getSalesTrendData = () => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      return date.toISOString().split('T')[0];
+    }).reverse();
+
+    const dailySales = last7Days.map(date => {
+      const daySales = filteredSales.filter(sale => 
+        sale.saleDate.split('T')[0] === date
+      );
+      return daySales.reduce((sum, sale) => sum + sale.total, 0);
+    });
+
+    return {
+      labels: last7Days.map(date => new Date(date).toLocaleDateString('en-US', { weekday: 'short' })),
+      datasets: [
+        {
+          label: 'Daily Sales',
+          data: dailySales,
+          borderColor: 'rgb(99, 102, 241)',
+          backgroundColor: 'rgba(99, 102, 241, 0.5)',
+          tension: 0.4,
+          fill: true
+        }
+      ]
+    };
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: '7-Day Sales Trend'
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: (value: number) => `$${value.toLocaleString()}`
+        }
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -270,6 +395,18 @@ const Sales: React.FC = () => {
             </div>
           </div>
           
+          {/* Sales Trend Chart */}
+          <div className="bg-white shadow-md rounded-xl overflow-hidden mb-8">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-xl font-semibold text-gray-800 flex items-center">
+                <FaChartLine className="mr-2 text-indigo-600" /> Sales Trend
+              </h3>
+            </div>
+            <div className="p-6">
+              <Line options={chartOptions} data={getSalesTrendData()} />
+            </div>
+          </div>
+          
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* New Sale Form */}
             <div className="lg:col-span-1">
@@ -281,7 +418,6 @@ const Sales: React.FC = () => {
                 </div>
                 <div className="p-6">
                   <form onSubmit={handleSubmit} className="space-y-5">
-                    {/* Item Selection */}
                     <div>
                       <label htmlFor="itemId" className="block text-sm font-medium text-gray-700 mb-1">
                         Select Product
@@ -289,7 +425,9 @@ const Sales: React.FC = () => {
                       <select
                         id="itemId"
                         name="itemId"
-                        className="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                        className={`block w-full px-4 py-3 border ${
+                          formErrors.itemId ? 'border-red-500' : 'border-gray-300'
+                        } rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors`}
                         value={newSale.itemId}
                         onChange={handleInputChange}
                         required
@@ -301,9 +439,11 @@ const Sales: React.FC = () => {
                           </option>
                         ))}
                       </select>
+                      {formErrors.itemId && (
+                        <p className="mt-1 text-sm text-red-600">{formErrors.itemId}</p>
+                      )}
                     </div>
 
-                    {/* Quantity */}
                     <div>
                       <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
                         Quantity
@@ -313,12 +453,17 @@ const Sales: React.FC = () => {
                         name="quantity"
                         id="quantity"
                         min="1"
-                        className="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                        className={`block w-full px-4 py-3 border ${
+                          formErrors.quantity ? 'border-red-500' : 'border-gray-300'
+                        } rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors`}
                         placeholder="Enter quantity"
                         value={newSale.quantity || ''}
                         onChange={handleInputChange}
                         required
                       />
+                      {formErrors.quantity && (
+                        <p className="mt-1 text-sm text-red-600">{formErrors.quantity}</p>
+                      )}
                     </div>
 
                     {/* Price Preview */}
@@ -359,26 +504,39 @@ const Sales: React.FC = () => {
                     <FaCalendarAlt className="mr-2 text-indigo-600" /> Sales History
                   </h3>
                   
-                  {/* Time Filter */}
-                  <div className="flex space-x-2">
-                    <button 
-                      onClick={() => filterSales('all')} 
-                      className={`px-3 py-1 text-sm rounded-full ${timeFilter === 'all' ? 'bg-indigo-100 text-indigo-700 font-medium' : 'text-gray-500 hover:bg-gray-100'}`}
-                    >
-                      All Time
-                    </button>
-                    <button 
-                      onClick={() => filterSales('month')} 
-                      className={`px-3 py-1 text-sm rounded-full ${timeFilter === 'month' ? 'bg-indigo-100 text-indigo-700 font-medium' : 'text-gray-500 hover:bg-gray-100'}`}
-                    >
-                      This Month
-                    </button>
-                    <button 
-                      onClick={() => filterSales('week')} 
-                      className={`px-3 py-1 text-sm rounded-full ${timeFilter === 'week' ? 'bg-indigo-100 text-indigo-700 font-medium' : 'text-gray-500 hover:bg-gray-100'}`}
-                    >
-                      This Week
-                    </button>
+                  {/* Search and Filter Controls */}
+                  <div className="flex items-center space-x-4">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Search sales..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      />
+                      <FaSearch className="absolute left-3 top-2.5 text-gray-400" />
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => filterSales('all')} 
+                        className={`px-3 py-1 text-sm rounded-full ${timeFilter === 'all' ? 'bg-indigo-100 text-indigo-700 font-medium' : 'text-gray-500 hover:bg-gray-100'}`}
+                      >
+                        All Time
+                      </button>
+                      <button 
+                        onClick={() => filterSales('month')} 
+                        className={`px-3 py-1 text-sm rounded-full ${timeFilter === 'month' ? 'bg-indigo-100 text-indigo-700 font-medium' : 'text-gray-500 hover:bg-gray-100'}`}
+                      >
+                        This Month
+                      </button>
+                      <button 
+                        onClick={() => filterSales('week')} 
+                        className={`px-3 py-1 text-sm rounded-full ${timeFilter === 'week' ? 'bg-indigo-100 text-indigo-700 font-medium' : 'text-gray-500 hover:bg-gray-100'}`}
+                      >
+                        This Week
+                      </button>
+                    </div>
                   </div>
                 </div>
                 
@@ -408,8 +566,8 @@ const Sales: React.FC = () => {
                       </thead>
                       {/* Table Body */}
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {sales.length > 0 ? (
-                          sales.map((sale) => (
+                        {filteredSales.length > 0 ? (
+                          filteredSales.map((sale) => (
                             <tr
                               key={sale._id}
                               className="hover:bg-gray-50 transition-colors duration-150"
@@ -451,10 +609,10 @@ const Sales: React.FC = () => {
                   </div>
                 )}
                 
-                {sales.length > 0 && (
+                {filteredSales.length > 0 && (
                   <div className="px-6 py-3 bg-gray-50 text-right">
                     <span className="text-sm text-gray-700">
-                      Showing <span className="font-medium">{sales.length}</span> transactions
+                      Showing <span className="font-medium">{filteredSales.length}</span> transactions
                     </span>
                   </div>
                 )}
@@ -464,6 +622,43 @@ const Sales: React.FC = () => {
         </div>
         <Toaster position="bottom-right" />
       </div>
+
+      {/* Confirmation Dialog */}
+      {showConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Confirm Sale</h3>
+            <div className="space-y-4">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Product:</span>
+                <span className="font-medium">{selectedItem?.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Quantity:</span>
+                <span className="font-medium">{newSale.quantity}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Total Amount:</span>
+                <span className="font-medium text-green-600">${estimatedTotal.toFixed(2)}</span>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                onClick={() => setShowConfirmation(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSale}
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Confirm Sale
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

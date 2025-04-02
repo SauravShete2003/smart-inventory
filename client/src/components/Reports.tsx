@@ -5,7 +5,6 @@ import api from "../utils/api";
 import { getJwtToken } from "../utils/common";
 import toast, { Toaster } from "react-hot-toast";
 import Navbar from "./Navbar";
-import Sidebar from "./Sidebar";
 
 const Reports: React.FC = () => {
   const [salesData, setSalesData] = useState<any[]>([]);
@@ -104,7 +103,6 @@ const Reports: React.FC = () => {
 
   return (
     <div className="flex">
-      <Sidebar />
       <div className="w-full py-6 sm:px-6 lg:px-8">
         <Navbar />
         <h1 className="text-2xl font-semibold text-gray-900 mb-6">Reports</h1>

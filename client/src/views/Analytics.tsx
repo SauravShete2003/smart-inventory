@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaChartBar, FaChartPie, FaChartLine, FaFilter, FaDownload, FaBoxOpen, FaExclamationTriangle } from 'react-icons/fa';
+import { FaChartBar, FaChartLine, FaFilter, FaDownload, FaBoxOpen, FaExclamationTriangle } from 'react-icons/fa';
 import api from '../utils/api';
 import { getJwtToken } from '../utils/common';
 import toast from 'react-hot-toast';
