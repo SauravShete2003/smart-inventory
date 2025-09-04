@@ -6,31 +6,44 @@ import { getJwtToken } from "../utils/common";
 import toast, { Toaster } from "react-hot-toast";
 import Navbar from "./Navbar";
 
-const Reports: React.FC = () => {
-  const [salesData, setSalesData] = useState<any[]>([]);
-  const [inventoryData, setInventoryData] = useState<any[]>([]);
+const Reports = () => {
+  const [salesData, setSalesData] = useState([]);
+  const [inventoryData, setInventoryData] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       const token = getJwtToken();
       if (!token) {
         toast.error("Authentication token not found!");
+        setLoading(false);
         return;
       }
 
       try {
+        // Fetch inventory data
         const inventoryResponse = await api.get("/inventories", {
           headers: { Authorization: token },
         });
         setInventoryData(inventoryResponse.data);
 
+        // Fetch sales data
         const salesResponse = await api.get("/sales", {
           headers: { Authorization: token },
         });
         setSalesData(salesResponse.data.sales);
+
+        // Fetch sales statistics
+        const statsResponse = await api.get("/sales/stats", {
+          headers: { Authorization: token },
+        });
+        setStats(statsResponse.data);
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("Failed to fetch data. Please try again.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -69,43 +82,75 @@ const Reports: React.FC = () => {
 
   const topSellingItems = salesData
     .reduce((acc, sale) => {
+      if (!sale || !sale.item) return acc;
+      
       const existingItem = acc.find(
-        (item: { name: any }) => item.name === sale.item.name
+        (item) => item.name === sale.item.name
       );
+      
       if (existingItem) {
-        existingItem.quantity += sale.quantity;
-        existingItem.total += sale.total;
+        existingItem.quantity += sale.quantity || 0;
+        existingItem.total += sale.total || 0;
       } else {
         acc.push({
           name: sale.item.name,
-          quantity: sale.quantity,
-          total: sale.total,
+          quantity: sale.quantity || 0,
+          total: sale.total || 0,
         });
       }
       return acc;
     }, [])
-    .sort(
-      (a: { quantity: number }, b: { quantity: number }) =>
-        b.quantity - a.quantity
-    )
+    .sort((a, b) => b.quantity - a.quantity)
     .slice(0, 5);
 
   const topSellingItemsData = {
-    labels: topSellingItems.map((item: { name: any }) => item.name),
+    labels: topSellingItems.map((item) => item.name),
     datasets: [
       {
         label: "Quantity Sold",
-        data: topSellingItems.map((item: { quantity: any }) => item.quantity),
+        data: topSellingItems.map((item) => item.quantity),
         backgroundColor: "rgba(54, 162, 235, 0.6)",
       },
     ],
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex">
       <div className="w-full py-6 sm:px-6 lg:px-8">
         <Navbar />
         <h1 className="text-2xl font-semibold text-gray-900 mb-6">Reports</h1>
+        
+        {/* Stats Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="bg-white shadow rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900">Total Sales</h3>
+            <p className="mt-2 text-3xl font-bold text-indigo-600">
+              ${stats?.totalSales?.toLocaleString() || 0}
+            </p>
+          </div>
+          <div className="bg-white shadow rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900">Monthly Sales</h3>
+            <p className="mt-2 text-3xl font-bold text-green-600">
+              ${stats?.monthlySales?.toLocaleString() || 0}
+            </p>
+          </div>
+          <div className="bg-white shadow rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900">Weekly Sales</h3>
+            <p className="mt-2 text-3xl font-bold text-blue-600">
+              ${stats?.weeklySales?.toLocaleString() || 0}
+            </p>
+          </div>
+        </div>
+
+        {/* Charts */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="bg-white shadow overflow-hidden sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
@@ -206,9 +251,8 @@ const Reports: React.FC = () => {
           </div>
         </div>
       </div>
-      <Toaster />
     </div>
   );
 };
 
-export default Reports;
+export default Reports; 

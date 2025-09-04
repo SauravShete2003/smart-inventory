@@ -4,15 +4,9 @@ import { getCurrentuser, getJwtToken } from '../utils/common';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 
-interface ThresholdSettings {
-  lowStockThreshold: number;
-  criticalStockThreshold: number;
-}
-
-const Settings: React.FC = () => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<string>('profile');
+const Settings = () => {
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('profile');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -26,7 +20,7 @@ const Settings: React.FC = () => {
     orderUpdates: true,
     systemAnnouncements: true
   });
-  const [thresholds, setThresholds] = useState<ThresholdSettings>({
+  const [thresholds, setThresholds] = useState({
     lowStockThreshold: 10,
     criticalStockThreshold: 5
   });
@@ -34,12 +28,11 @@ const Settings: React.FC = () => {
   useEffect(() => {
     const currentUser = getCurrentuser();
     if (currentUser) {
-      setUser(currentUser);
-      setFormData({
-        ...formData,
+      setFormData(f => ({
+        ...f,
         username: currentUser.username || '',
         email: currentUser.email || ''
-      });
+      }));
     }
 
     // Fetch user settings
@@ -111,7 +104,7 @@ const Settings: React.FC = () => {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -119,7 +112,7 @@ const Settings: React.FC = () => {
     });
   };
 
-  const handleNotificationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNotificationChange = (e) => {
     const { name, checked } = e.target;
     setNotificationSettings({
       ...notificationSettings,
@@ -127,7 +120,7 @@ const Settings: React.FC = () => {
     });
   };
 
-  const handleThresholdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleThresholdChange = (e) => {
     const { name, value } = e.target;
     setThresholds({
       ...thresholds,
@@ -135,9 +128,9 @@ const Settings: React.FC = () => {
     });
   };
 
-  const handleProfileSubmit = async (e: React.FormEvent) => {
+  const handleProfileSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
       toast.error("New passwords don't match");
       return;
@@ -161,13 +154,12 @@ const Settings: React.FC = () => {
       });
 
       toast.success("Profile updated successfully");
-      
+
       // Update local user data
       if (response.data.user) {
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        setUser(response.data.user);
       }
-      
+
       // Clear password fields
       setFormData({
         ...formData,
@@ -175,7 +167,7 @@ const Settings: React.FC = () => {
         newPassword: '',
         confirmPassword: ''
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error updating profile:", error);
       toast.error(error.response?.data?.message || "Failed to update profile");
     } finally {
@@ -183,7 +175,7 @@ const Settings: React.FC = () => {
     }
   };
 
-  const handleNotificationsSubmit = async (e: React.FormEvent) => {
+  const handleNotificationsSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
@@ -206,7 +198,7 @@ const Settings: React.FC = () => {
     }
   };
 
-  const handleThresholdsSubmit = async (e: React.FormEvent) => {
+  const handleThresholdsSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);

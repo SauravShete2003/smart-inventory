@@ -1,4 +1,4 @@
-// src/components/Navbar.tsx
+// src/components/Navbar.jsx
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -18,7 +18,7 @@ import {
 import React from "react";
 
 function Navbar() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState(null);
   const { logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 

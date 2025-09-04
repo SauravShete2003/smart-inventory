@@ -1,13 +1,12 @@
 import axios from "axios"
 
 const api = axios.create({
-
   baseURL: process.env.REACT_APP_BACKEND_URL || "http://localhost:5000",
 })
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token")
+    const token = localStorage.getItem("smart-inventory-user-token")
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`
     }
@@ -15,8 +14,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error)
-  },
+  }
 )
 
 export default api
-

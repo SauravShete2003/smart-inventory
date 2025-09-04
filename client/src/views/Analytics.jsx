@@ -1,46 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaChartBar, FaChartLine, FaFilter, FaDownload, FaBoxOpen, FaExclamationTriangle } from 'react-icons/fa';
 import api from '../utils/api';
 import { getJwtToken } from '../utils/common';
 import toast from 'react-hot-toast';
 
-interface SalesData {
-  labels: string[];
-  datasets: {
-    label: string;
-    data: number[];
-    backgroundColor?: string;
-    borderColor?: string;
-  }[];
-}
-
-interface InventoryStatus {
-  name: string;
-  quantity: number;
-  price: number;
-  category: string;
-  status: 'normal' | 'low' | 'critical';
-}
-
-interface TopSellingItem {
-  name: string;
-  quantity: number;
-  revenue: number;
-  percentage: number;
-}
-
-const Analytics: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(true);
-  const [timeRange, setTimeRange] = useState<string>('month');
-  const [salesData, setSalesData] = useState<SalesData | null>(null);
-  const [inventoryStatus, setInventoryStatus] = useState<InventoryStatus[]>([]);
-  const [topSellingItems, setTopSellingItems] = useState<TopSellingItem[]>([]);
+const Analytics = () => {
+  const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState('month');
+  const [salesData, setSalesData] = useState(null);
+  const [inventoryStatus, setInventoryStatus] = useState([]);
+  const [topSellingItems, setTopSellingItems] = useState([]);
   
-  useEffect(() => {
-    fetchAnalyticsData();
-  }, [timeRange]);
-
-  const fetchAnalyticsData = async () => {
+  const fetchAnalyticsData = useCallback(async () => {
     try {
       setLoading(true);
       const token = getJwtToken();
@@ -66,7 +37,7 @@ const Analytics: React.FC = () => {
     } catch (error) {
       console.error("Error fetching analytics data:", error);
       toast.error("Failed to load analytics data");
-      
+
       // Fallback to mock data if API fails
       const mockData = generateMockData();
       setSalesData(mockData.salesData);
@@ -75,7 +46,11 @@ const Analytics: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange]);
+
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, [fetchAnalyticsData]);
 
   const generateMockData = () => {
     // Generate mock data for demonstration
@@ -98,14 +73,14 @@ const Analytics: React.FC = () => {
     };
 
     const mockInventoryStatus = [
-      { name: 'Laptop Dell XPS 15', quantity: 12, price: 1299, category: 'Electronics', status: 'normal' as 'normal' | 'low' | 'critical' },
-      { name: 'Wireless Mouse', quantity: 8, price: 29.99, category: 'Accessories', status: 'low' as 'normal' | 'low' | 'critical' },
-      { name: 'USB-C Hub', quantity: 15, price: 49.99, category: 'Accessories', status: 'normal' as 'normal' | 'low' | 'critical' },
-      { name: 'iPad Pro 11"', quantity: 3, price: 799, category: 'Electronics', status: 'critical' as 'normal' | 'low' | 'critical' },
-      { name: 'AirPods Pro', quantity: 5, price: 249, category: 'Audio', status: 'low' as 'normal' | 'low' | 'critical' },
-      { name: 'Mechanical Keyboard', quantity: 7, price: 89.99, category: 'Accessories', status: 'low' as 'normal' | 'low' | 'critical' },
-      { name: 'External SSD 1TB', quantity: 11, price: 159.99, category: 'Storage', status: 'normal' as 'normal' | 'low' | 'critical' },
-      { name: 'Wireless Charger', quantity: 2, price: 35.99, category: 'Accessories', status: 'critical' as 'normal' | 'low' | 'critical' }
+      { name: 'Laptop Dell XPS 15', quantity: 12, price: 1299, category: 'Electronics', status: 'normal' },
+      { name: 'Wireless Mouse', quantity: 8, price: 29.99, category: 'Accessories', status: 'low' },
+      { name: 'USB-C Hub', quantity: 15, price: 49.99, category: 'Accessories', status: 'normal' },
+      { name: 'iPad Pro 11"', quantity: 3, price: 799, category: 'Electronics', status: 'critical' },
+      { name: 'AirPods Pro', quantity: 5, price: 249, category: 'Audio', status: 'low' },
+      { name: 'Mechanical Keyboard', quantity: 7, price: 89.99, category: 'Accessories', status: 'low' },
+      { name: 'External SSD 1TB', quantity: 11, price: 159.99, category: 'Storage', status: 'normal' },
+      { name: 'Wireless Charger', quantity: 2, price: 35.99, category: 'Accessories', status: 'critical' }
     ];
 
     const mockTopSellingItems = [
@@ -123,7 +98,7 @@ const Analytics: React.FC = () => {
     };
   };
 
-  const handleTimeRangeChange = (range: string) => {
+  const handleTimeRangeChange = (range) => {
     setTimeRange(range);
   };
 

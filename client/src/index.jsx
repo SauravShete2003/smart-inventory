@@ -5,7 +5,7 @@ import App from './App'
 import { AuthProvider } from './contexts/AuthContext'
 import React from 'react'
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById('root')).render(
 
   <StrictMode>
  <AuthProvider>

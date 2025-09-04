@@ -3,28 +3,21 @@ import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
-interface SignupData {
-  username: string;
-  email: string;
-  password: string;
-  rePassword: string;
-}
-
-const Signup: React.FC = () => {
-  const [signupData, setSignupData] = useState<SignupData>({
+const Signup = () => {
+  const [signupData, setSignupData] = useState({
     username: "",
     email: "",
     password: "",
     rePassword: "",
   });
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSignupData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const validateInputs = (): boolean => {
+  const validateInputs = () => {
     if (signupData.password !== signupData.rePassword) {
       setError("Passwords do not match.");
       toast.error("Passwords do not match.");
@@ -53,7 +46,7 @@ const Signup: React.FC = () => {
         rePassword: "",
       });
       setTimeout(() => (window.location.href = "/login"), 2000);
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Signup failed. Try again.";
       setError(errorMessage);
@@ -199,4 +192,4 @@ const Signup: React.FC = () => {
   );
 };
 
-export default Signup;
+export default Signup; 

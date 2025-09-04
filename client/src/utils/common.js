@@ -5,7 +5,7 @@ const getCurrentuser = (): any => {
   
   const getJwtToken = (): string | null => {
     const token = localStorage.getItem("smart-inventory-user-token");
-    return token ? `Bearer ${token}` : null;
+    return token || null;
   };
   
   const logOut = (): void => {

@@ -3,106 +3,33 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../utils/api";
 
-const Login: React.FC = () => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string>("");
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError(""); // Clear previous errors
 
     try {
-      // Try to connect to the actual backend
-      const response = await api.post("/login", { email, password }, {
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }).catch(err => {
-        // If the server returns 400 (Bad Request) or 404 (Not Found), use mock login for development
-        if (err.response && (err.response.status === 400 || err.response.status === 404)) {
-          // For development - mock login with hardcoded credentials
-          if (email === "admin@example.com" && password === "password") {
-            return {
-              data: {
-                token: "mock-jwt-token-for-development",
-                data: {
-                  id: "admin-123",
-                  email: "admin@example.com",
-                  role: "admin",
-                  username: "Admin User"
-                },
-                user: {
-                  id: "admin-123",
-                  email: "admin@example.com",
-                  role: "admin",
-                  username: "Admin User"
-                },
-                role: "admin"
-              }
-            };
-          } else if (email === "user@example.com" && password === "password") {
-            return {
-              data: {
-                token: "mock-jwt-token-for-development",
-                data: {
-                  id: "user-123",
-                  email: "user@example.com",
-                  role: "user",
-                  username: "Regular User"
-                },
-                user: {
-                  id: "user-123",
-                  email: "user@example.com",
-                  role: "user",
-                  username: "Regular User"
-                },
-                role: "user"
-              }
-            };
-          } else if (email === "employee@example.com" && password === "password") {
-            return {
-              data: {
-                token: "mock-jwt-token-for-development",
-                data: {
-                  id: "employee-123",
-                  email: "employee@example.com",
-                  role: "employee",
-                  username: "Employee User"
-                },
-                user: {
-                  id: "employee-123",
-                  email: "employee@example.com",
-                  role: "employee",
-                  username: "Employee User"
-                },
-                role: "employee"
-              }
-            };
-          }
-          // If credentials don't match the mock users
-          throw new Error("Invalid credentials");
-        }
-        throw err;
-      });
-
-      if (response.data.token) {
+      const response = await api.post("/api/auth/login", { email, password });
+      if (response.data && response.data.token) {
         localStorage.setItem("smart-inventory-user-token", response.data.token);
         localStorage.setItem(
           "smart-inventory-user-details",
-          JSON.stringify(response.data.data)
+          JSON.stringify(response.data.user)
         );
-
-        login(response.data.token, response.data.user, response.data.role);
+        login(response.data.token, response.data.user, response.data.user.role);
         navigate("/");
       } else {
         setError("Invalid credentials. Please try again.");
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Login error:", err);
-      setError(err.response?.data?.message || err.message || "Invalid credentials");
+      setError(err.response?.data?.message || "Invalid credentials");
     }
   };
 
@@ -211,4 +138,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default Login; 
