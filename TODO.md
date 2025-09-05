@@ -1,22 +1,15 @@
-# Fix Chart.js Errors in Smart Inventory
+# Improve Inventory Display
 
 ## Tasks
-- [x] Import and register Chart.js components in Dashboard.jsx
-- [x] Add key prop to Bar component to prevent canvas reuse
-- [x] Fix API route prefixes to match backend configuration
-- [x] Add debug logging to auth middleware and Dashboard.jsx
-- [x] Fix SECRET_KEY consistency between token signing and verification
-- [x] Test the Dashboard to ensure errors are resolved
+- [ ] Add separate "Description" column to table header and body
+- [ ] Add "Threshold" column to table header and body
+- [ ] Add "Image" column or integrate image into name cell if available
+- [ ] Adjust table column widths and alignment for better layout
+- [ ] Ensure responsive design for mobile views
+- [ ] Test the updated display
 
-## Status
-- Current: All fixes implemented and tested. Chart.js errors and authentication issues resolved.
-
-# API Endpoint Fixes
-
-## Tasks
-- [x] Update PUT request endpoint in Inventory.jsx to include /api prefix
-- [x] Update DELETE request endpoint in Inventory.jsx to include /api prefix
-- [ ] Test the Inventory CRUD operations to ensure API calls work correctly
-
-## Status
-- Current: Updated PUT and DELETE endpoints to use /api/inventories prefix. Ready for testing.
+## Summary of Changes
+- Separate description for better visibility
+- Show threshold for complete inventory info
+- Integrate images if present
+- Improved alignment and responsiveness

@@ -268,6 +268,60 @@ const Inventory = () => {
         <Navbar />
         <h1 className="text-2xl font-semibold text-gray-900 mb-6">Inventory</h1>
 
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg rounded-lg p-6 text-white">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <FaPlus className="h-8 w-8 opacity-75" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium opacity-75">Total Items</p>
+                <p className="text-3xl font-bold">{inventory.length}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 shadow-lg rounded-lg p-6 text-white">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <FaSearch className="h-8 w-8 opacity-75" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium opacity-75">Low Stock</p>
+                <p className="text-3xl font-bold">
+                  {inventory.filter(item => item.quantity <= item.threshold).length}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gradient-to-r from-green-500 to-green-600 shadow-lg rounded-lg p-6 text-white">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <FaSort className="h-8 w-8 opacity-75" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium opacity-75">In Stock</p>
+                <p className="text-3xl font-bold">
+                  {inventory.filter(item => item.quantity > item.threshold).length}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gradient-to-r from-purple-500 to-purple-600 shadow-lg rounded-lg p-6 text-white">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <FaEdit className="h-8 w-8 opacity-75" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium opacity-75">Total Value</p>
+                <p className="text-3xl font-bold">
+                  ₹{inventory.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Search and Filter Bar */}
         <div className="mb-6 flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
@@ -314,7 +368,7 @@ const Inventory = () => {
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer w-1/6"
                   onClick={() => handleSort("name")}
                 >
                   <div className="flex items-center">
@@ -326,7 +380,13 @@ const Inventory = () => {
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4"
+                >
+                  Description
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer w-1/6"
                   onClick={() => handleSort("category")}
                 >
                   <div className="flex items-center">
@@ -338,7 +398,7 @@ const Inventory = () => {
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer w-1/12"
                   onClick={() => handleSort("quantity")}
                 >
                   <div className="flex items-center">
@@ -350,7 +410,7 @@ const Inventory = () => {
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer w-1/12"
                   onClick={() => handleSort("price")}
                 >
                   <div className="flex items-center">
@@ -362,7 +422,19 @@ const Inventory = () => {
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer w-1/12"
+                  onClick={() => handleSort("threshold")}
+                >
+                  <div className="flex items-center">
+                    Threshold
+                    {sortField === "threshold" && (
+                      <FaSort className="ml-2" />
+                    )}
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6"
                 >
                   Status
                 </th>
@@ -373,27 +445,43 @@ const Inventory = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {getSortedAndFilteredInventory().map((item) => (
-                <tr key={item._id}>
+                <tr key={item._id} className="hover:bg-gray-50 transition-colors duration-200">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {item.name}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {item.description}
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-r from-indigo-400 to-purple-500 flex items-center justify-center">
+                          <span className="text-white font-semibold text-sm">
+                            {item.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {item.name}
+                        </div>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.category}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {item.description}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      {item.category}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-right">
                     {item.quantity}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${item.price.toLocaleString()}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-right">
+                    ₹{item.price.toLocaleString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-right">
+                    {item.threshold}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
                         getStockStatus(item.quantity, item.threshold) === "out-of-stock"
                           ? "bg-red-100 text-red-800"
                           : getStockStatus(item.quantity, item.threshold) === "low-stock"
@@ -401,6 +489,13 @@ const Inventory = () => {
                           : "bg-green-100 text-green-800"
                       }`}
                     >
+                      <span className={`w-2 h-2 rounded-full mr-2 ${
+                        getStockStatus(item.quantity, item.threshold) === "out-of-stock"
+                          ? "bg-red-400"
+                          : getStockStatus(item.quantity, item.threshold) === "low-stock"
+                          ? "bg-yellow-400"
+                          : "bg-green-400"
+                      }`}></span>
                       {getStockStatus(item.quantity, item.threshold) === "out-of-stock"
                         ? "Out of Stock"
                         : getStockStatus(item.quantity, item.threshold) === "low-stock"
@@ -409,25 +504,29 @@ const Inventory = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => {
-                        setSelectedItem(item);
-                        setNewItem(item);
-                        setShowEditModal(true);
-                      }}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedItem(item);
-                        setShowDeleteModal(true);
-                      }}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      <FaTrash />
-                    </button>
+                    <div className="flex justify-end space-x-2">
+                      <button
+                        onClick={() => {
+                          setSelectedItem(item);
+                          setNewItem(item);
+                          setShowEditModal(true);
+                        }}
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                      >
+                        <FaEdit className="mr-1" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedItem(item);
+                          setShowDeleteModal(true);
+                        }}
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+                      >
+                        <FaTrash className="mr-1" />
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -437,11 +536,21 @@ const Inventory = () => {
 
         {/* Add Item Modal */}
         {showAddModal && (
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Add New Item
-              </h3>
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-lg w-full mx-4 transform transition-all duration-300 scale-100">
+              <div className="flex items-center mb-6">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <FaPlus className="text-white" />
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Add New Item
+                  </h3>
+                  <p className="text-sm text-gray-500">Fill in the details below</p>
+                </div>
+              </div>
               <form onSubmit={handleAddItem}>
                 <div className="space-y-4">
                   <div>
@@ -593,11 +702,21 @@ const Inventory = () => {
 
         {/* Edit Item Modal */}
         {showEditModal && selectedItem && (
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Edit Item
-              </h3>
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-lg w-full mx-4 transform transition-all duration-300 scale-100">
+              <div className="flex items-center mb-6">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <FaEdit className="text-white" />
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Edit Item
+                  </h3>
+                  <p className="text-sm text-gray-500">Update the item details below</p>
+                </div>
+              </div>
               <form onSubmit={handleEditItem}>
                 <div className="space-y-4">
                   <div>
@@ -752,15 +871,39 @@ const Inventory = () => {
 
         {/* Delete Confirmation Modal */}
         {showDeleteModal && selectedItem && (
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Delete Item
-              </h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Are you sure you want to delete {selectedItem.name}? This action
-                cannot be undone.
-              </p>
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-lg w-full mx-4 transform transition-all duration-300 scale-100">
+              <div className="flex items-center mb-6">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center">
+                    <FaTrash className="text-white" />
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Delete Item
+                  </h3>
+                  <p className="text-sm text-gray-500">This action cannot be undone</p>
+                </div>
+              </div>
+              <div className="mb-6">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <FaTrash className="h-5 w-5 text-red-400" />
+                    </div>
+                    <div className="ml-3">
+                      <h4 className="text-sm font-medium text-red-800">
+                        You are about to delete:
+                      </h4>
+                      <div className="mt-2 text-sm text-red-700">
+                        <p className="font-semibold">{selectedItem.name}</p>
+                        <p className="mt-1">{selectedItem.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
                 <button
                   type="button"
