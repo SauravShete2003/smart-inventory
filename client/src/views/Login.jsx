@@ -20,9 +20,9 @@ const Login = () => {
         localStorage.setItem("smart-inventory-user-token", response.data.token);
         localStorage.setItem(
           "smart-inventory-user-details",
-          JSON.stringify(response.data.user)
+          JSON.stringify(response.data.data)
         );
-        login(response.data.token, response.data.user, response.data.user.role);
+        login(response.data.token, response.data.data, response.data.data.role);
         navigate("/");
       } else {
         setError("Invalid credentials. Please try again.");

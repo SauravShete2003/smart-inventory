@@ -36,7 +36,7 @@ app.use(cors({
 
 const mongoDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URL, {
+        await mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/smart-inventory', {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });

@@ -3,7 +3,7 @@ import api from "../utils/api";
 import { getJwtToken } from "../utils/common";
 import toast, { Toaster } from "react-hot-toast";
 import Navbar from "../components/Navbar";
-import { FaPlus, FaShoppingCart, FaChartLine, FaBox, FaMoneyBillWave, FaCalendarAlt, FaSearch } from 'react-icons/fa';
+// import { FaPlus } from 'react-icons/fa';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -38,15 +38,12 @@ const Sales = () => {
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [timeFilter, setTimeFilter] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
   const [saleSummary, setSaleSummary] = useState({
     totalSales: 0,
     totalItems: 0,
     averageOrder: 0,
     monthlySales: 0
   });
-  const [showConfirmation, setShowConfirmation] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 
   // Reusable function for API fetching
@@ -61,9 +58,7 @@ const Sales = () => {
 
     try {
       // Fetch inventory
-      const inventoryResponse = await api.get("/inventories", {
-        headers: { Authorization: token },
-      }).catch(() => {
+      const inventoryResponse = await api.get("/api/inventories").catch(() => {
         // Mock inventory data if API fails
         return { 
           data: [
@@ -79,9 +74,7 @@ const Sales = () => {
       setInventory(inventoryResponse.data);
 
       // Fetch sales
-      const salesResponse = await api.get("/sales", {
-        headers: { Authorization: token },
-      }).catch(() => {
+      const salesResponse = await api.get("/api/sales").catch(() => {
         // Mock sales data if API fails
         return { 
           data: { 
@@ -179,15 +172,11 @@ const Sales = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
-    setShowConfirmation(true);
-  };
-
-  const confirmSale = async () => {
     const token = getJwtToken();
     if (!token) {
       toast.error("Authentication token is missing!");
@@ -207,7 +196,6 @@ const Sales = () => {
         quantity: 0,
       });
       setSelectedItem(null);
-      setShowConfirmation(false);
       toast.success("Sale recorded successfully!");
       fetchData(); // Refresh data after successful submission
     } catch (error) {
@@ -216,19 +204,6 @@ const Sales = () => {
         error.response?.data?.message || "Failed to record sale. Please try again."
       );
     }
-  };
-
-  const filterSales = (filter) => {
-    setTimeFilter(filter);
-    // Implement filtering logic here
-  };
-
-  const getSalesTrendData = () => {
-    // Implement sales trend data logic here
-    return {
-      labels: [],
-      datasets: []
-    };
   };
 
   if (loading) {
@@ -250,7 +225,7 @@ const Sales = () => {
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900">Total Sales</h3>
             <p className="mt-2 text-3xl font-bold text-indigo-600">
-              ${saleSummary.totalSales.toLocaleString()}
+              ₹{saleSummary.totalSales.toLocaleString()}
             </p>
           </div>
           <div className="bg-white shadow rounded-lg p-6">
@@ -262,13 +237,13 @@ const Sales = () => {
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900">Average Order Value</h3>
             <p className="mt-2 text-3xl font-bold text-blue-600">
-              ${saleSummary.averageOrder.toLocaleString()}
+              ₹{saleSummary.averageOrder.toLocaleString()}
             </p>
           </div>
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900">Monthly Sales</h3>
             <p className="mt-2 text-3xl font-bold text-purple-600">
-              ${saleSummary.monthlySales.toLocaleString()}
+              ₹{saleSummary.monthlySales.toLocaleString()}
             </p>
           </div>
         </div>
@@ -281,7 +256,10 @@ const Sales = () => {
             </h3>
             <div className="mt-5">
               <Line
-                data={getSalesTrendData()}
+                data={{
+                  labels: [],
+                  datasets: []
+                }}
                 options={{ responsive: true, maintainAspectRatio: false }}
               />
             </div>
@@ -309,7 +287,7 @@ const Sales = () => {
                   <option value="">Select an item</option>
                   {inventory.map((item) => (
                     <option key={item._id} value={item._id}>
-                      {item.name} - ${item.price} (Stock: {item.quantity})
+                      {item.name} - ₹{item.price} (Stock: {item.quantity})
                     </option>
                   ))}
                 </select>
@@ -377,13 +355,13 @@ const Sales = () => {
                         {new Date(sale.saleDate).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {sale.item.name}
+                        {sale.item ? sale.item.name : 'Unknown Item'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {sale.quantity}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ${sale.total.toLocaleString()}
+                        ₹{sale.total.toLocaleString()}
                       </td>
                     </tr>
                   ))}

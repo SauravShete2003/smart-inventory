@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import axios from "axios";
+import api from "../utils/api";
 import { Link } from "react-router-dom";
 
 const Signup = () => {
@@ -32,10 +32,7 @@ const Signup = () => {
 
     toast.loading("Please wait...");
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/signup`,
-        signupData
-      );
+      const response = await api.post("/api/auth/signup", signupData);
       toast.dismiss();
       toast.success(response.data.message);
 

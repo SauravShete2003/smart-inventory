@@ -3,7 +3,7 @@ import api from "../utils/api";
 import { getJwtToken } from "../utils/common";
 import toast, { Toaster } from "react-hot-toast";
 import Navbar from "../components/Navbar";
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaSort, FaBox, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaSort } from 'react-icons/fa';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 const Inventory = () => {
@@ -38,9 +38,7 @@ const Inventory = () => {
     }
 
     try {
-      const response = await api.get("/inventories", {
-        headers: { Authorization: token },
-      }).catch(() => {
+      const response = await api.get("/api/inventories").catch(() => {
         // Mock inventory data if API fails
         return { 
           data: [
@@ -124,9 +122,7 @@ const Inventory = () => {
     }
 
     try {
-      await api.post("/inventories", newItem, {
-        headers: { Authorization: token },
-      }).catch(() => {
+      await api.post("/api/inventories", newItem).catch(() => {
         // Mock successful response if API fails
         return { data: { success: true } };
       });
@@ -164,9 +160,7 @@ const Inventory = () => {
     }
 
     try {
-      await api.put(`/inventories/${selectedItem._id}`, newItem, {
-        headers: { Authorization: token },
-      }).catch(() => {
+      await api.put(`/api/inventories/${selectedItem._id}`, newItem).catch(() => {
         // Mock successful response if API fails
         return { data: { success: true } };
       });
@@ -191,9 +185,7 @@ const Inventory = () => {
     }
 
     try {
-      await api.delete(`/inventories/${selectedItem._id}`, {
-        headers: { Authorization: token },
-      }).catch(() => {
+      await api.delete(`/api/inventories/${selectedItem._id}`).catch(() => {
         // Mock successful response if API fails
         return { data: { success: true } };
       });

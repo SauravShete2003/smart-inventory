@@ -25,7 +25,7 @@ const postSignup = async (req, res) => {
 
   const user = new User({
     username,
-    password: await bcrypt.hash(password, hashedPassword),
+    password: hashedPassword,
     email,
     role
   });
@@ -36,18 +36,16 @@ const postSignup = async (req, res) => {
       data: {
         name: savedUser.username,
         email: savedUser.email,
-        address: savedUser.address,
       },
     });
   } catch (error) {
-    // console.log(error.keyValue);
     if (error.message.includes("duplicate key error")) {
       return res.status(400).json({
-        succeess: false,
+        success: false,
         message:`${Object.keys(error.keyValue)} '${Object.values(error.keyValue)}' already exists`,
       })
     }
-    res.status(400).json({ message: error.message, succeess: false });
+    res.status(400).json({ message: error.message, success: false });
   }
 };
 
@@ -73,7 +71,7 @@ const postLogin = async (req, res) => {
   if (!isValidPassword) {
     return res.status(400).json({ message: "Invalid Email or Password" });
   }
-  const token = jwt.sign( userDetails,process.env.SECRET_KEY,{ expiresIn: "1h" });
+  const token = jwt.sign( userDetails, process.env.SECRET_KEY || 'fallback-secret-key-for-development', { expiresIn: "1h" });
   
   res.setHeader("Authorization" , `Bearer ${token}`);
 
