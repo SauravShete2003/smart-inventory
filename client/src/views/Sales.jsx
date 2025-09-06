@@ -159,7 +159,7 @@ const Sales = () => {
     }
 
     try {
-      await api.post("/sales", newSale, { headers: { Authorization: token } }).catch(() => ({
+      await api.post("/api/sales", newSale, { headers: { Authorization: token } }).catch(() => ({
         data: { success: true },
       }));
       setNewSale({ itemId: "", quantity: 0 });

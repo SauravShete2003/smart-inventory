@@ -7,9 +7,6 @@ import Inventory from "./views/Inventory.jsx";
 import Sales from "./views/Sales.jsx";
 import Reports from "./components/Reports.jsx";
 import Signup from "./views/Signup.jsx";
-import AdminPanel from "./views/AdminPanel.jsx";
-import Settings from "./views/Settings.jsx";
-import Analytics from "./views/Analytics.jsx";
 
 const App = () => {
   return (
@@ -49,30 +46,6 @@ const App = () => {
               element={
                
                   <Reports />
-                
-              }
-            />
-            <Route 
-              path="/admin/*"
-              element={
-              
-                  <AdminPanel />
-                
-              }
-            />
-            <Route 
-              path="/settings/*"
-              element={
-              
-                  <Settings />
-                
-              }
-            />
-            <Route 
-              path="/analytics/*"
-              element={
-              
-                  <Analytics />
                 
               }
             />
