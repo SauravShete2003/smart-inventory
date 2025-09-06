@@ -9,6 +9,8 @@ import { fileURLToPath } from 'url';
 import authRoutes from './routes/authRoutes.js';
 import inventoryRoutes from './routes/inventoryRoutes.js';
 import salesRoutes from './routes/salesRoutes.js';
+import { getSalesStats } from './controllers/salesController.js';
+import { authenticateToken } from './middleware/auth.js';
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -58,6 +60,8 @@ app.get("/health", (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/inventories', inventoryRoutes);
 app.use('/api/sales', salesRoutes);
+
+app.get('/sales/stats', authenticateToken, getSalesStats);
 
 app.listen(port, () => {
     console.log(`🚀 Server is running on port ${port}`);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+// import { useAuth } from "../contexts/AuthContext";
 import { getCurrentuser, logOut } from "../utils/common";
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -10,11 +10,9 @@ import {
   Box,
   ShoppingCart,
   BarChart,
-  Settings,
   ClipboardList,
   User,
 } from "lucide-react";
-import React from "react";
 
 // ✅ Small NavLink component for cleaner code
 const NavLink = ({ to, icon, label, active }) => (
@@ -33,7 +31,7 @@ const NavLink = ({ to, icon, label, active }) => (
 
 function Navbar() {
   const [user, setUser] = useState(null);
-  const { logout } = useAuth();
+  // const { logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -96,12 +94,6 @@ function Navbar() {
                     icon={<BarChart />}
                     label="Reports"
                     active={location.pathname === "/reports"}
-                  />
-                  <NavLink
-                    to="/admin"
-                    icon={<Settings />}
-                    label="Admin Panel"
-                    active={location.pathname === "/admin"}
                   />
                 </>
               )}
@@ -192,12 +184,6 @@ function Navbar() {
                     icon={<BarChart />}
                     label="Reports"
                     active={location.pathname === "/reports"}
-                  />
-                  <NavLink
-                    to="/admin"
-                    icon={<Settings />}
-                    label="Admin Panel"
-                    active={location.pathname === "/admin"}
                   />
                 </>
               )}
