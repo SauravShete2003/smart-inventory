@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { getCurrentuser, logOut } from "../utils/common";
 import toast, { Toaster } from "react-hot-toast";
@@ -16,13 +16,28 @@ import {
 } from "lucide-react";
 import React from "react";
 
+// ✅ Small NavLink component for cleaner code
+const NavLink = ({ to, icon, label, active }) => (
+  <Link
+    to={to}
+    className={`flex items-center px-3 py-2 text-sm font-medium transition ${
+      active
+        ? "text-indigo-600 border-b-2 border-indigo-600"
+        : "text-gray-600 hover:text-indigo-600"
+    }`}
+  >
+    <span className="w-5 h-5 mr-1">{icon}</span>
+    {label}
+  </Link>
+);
+
 function Navbar() {
   const [user, setUser] = useState(null);
   const { logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
-    // Get the current user (e.g., from localStorage or context)
     const currentUser = getCurrentuser();
     if (currentUser) {
       setUser(currentUser);
@@ -34,95 +49,101 @@ function Navbar() {
     }
   }, []);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen((prev) => !prev);
-  };
+  const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
 
   return (
     <div>
-      <nav className="bg-white shadow-sm">
+      <nav className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            {/* Logo Section */}
-            <div className="flex items-center">
-              <div className="flex-shrink-0 flex items-center">
-                <span className="text-lg font-semibold text-indigo-600">
-                  Smart Inventory
-                </span>
-              </div>
-            </div>
-
-            {/* Desktop Navigation */}
-            <div className="hidden sm:flex sm:items-center sm:space-x-6">
+          <div className="flex justify-between items-center h-16">
+            {/* Left - Logo */}
+            <div className="flex-shrink-0">
               <Link
                 to="/"
-                className="flex items-center text-gray-900 px-3 py-2 text-sm font-medium hover:text-indigo-600"
+                className="text-xl font-extrabold tracking-tight flex items-center"
               >
-                <Home className="w-5 h-5 mr-1" /> Dashboard
+                <span className="text-indigo-600">Smart</span>
+                <span className="text-gray-900">Inventory</span>
               </Link>
-              {user &&
-                (user.role === "admin" ||
-                  user.role === "employee") && (
-                  <Link
-                    to="/inventory"
-                    className="flex items-center text-gray-500 px-3 py-2 text-sm font-medium hover:text-indigo-600"
-                  >
-                    <Box className="w-5 h-5 mr-1" /> Inventory
-                  </Link>
-                )}
-              <Link
+            </div>
+
+            {/* Center - Nav Links */}
+            <div className="hidden sm:flex items-center space-x-6">
+              <NavLink
+                to="/"
+                icon={<Home />}
+                label="Dashboard"
+                active={location.pathname === "/"}
+              />
+              {(user?.role === "admin" || user?.role === "employee") && (
+                <NavLink
+                  to="/inventory"
+                  icon={<Box />}
+                  label="Inventory"
+                  active={location.pathname === "/inventory"}
+                />
+              )}
+              <NavLink
                 to="/sales"
-                className="flex items-center text-gray-500 px-3 py-2 text-sm font-medium hover:text-indigo-600"
-              >
-                <ShoppingCart className="w-5 h-5 mr-1" /> Sales
-              </Link>
-              {user && user.role === "admin" && (
+                icon={<ShoppingCart />}
+                label="Sales"
+                active={location.pathname === "/sales"}
+              />
+              {user?.role === "admin" && (
                 <>
-                  <Link
+                  <NavLink
                     to="/reports"
-                    className="flex items-center text-gray-500 px-3 py-2 text-sm font-medium hover:text-indigo-600"
-                  >
-                    <BarChart className="w-5 h-5 mr-1" /> Reports
-                  </Link>
-                  <Link
+                    icon={<BarChart />}
+                    label="Reports"
+                    active={location.pathname === "/reports"}
+                  />
+                  <NavLink
                     to="/admin"
-                    className="flex items-center text-gray-500 px-3 py-2 text-sm font-medium hover:text-indigo-600"
-                  >
-                    <Settings className="w-5 h-5 mr-1" /> Admin Panel
-                  </Link>
+                    icon={<Settings />}
+                    label="Admin Panel"
+                    active={location.pathname === "/admin"}
+                  />
                 </>
               )}
-              {user && user.role === "employee" && (
-                <Link
+              {user?.role === "employee" && (
+                <NavLink
                   to="/tasks"
-                  className="flex items-center text-gray-500 px-3 py-2 text-sm font-medium hover:text-indigo-600"
-                >
-                  <ClipboardList className="w-5 h-5 mr-1" /> Tasks
-                </Link>
+                  icon={<ClipboardList />}
+                  label="Tasks"
+                  active={location.pathname === "/tasks"}
+                />
               )}
-              {user && user.role === "user" && (
-                <Link
+              {user?.role === "user" && (
+                <NavLink
                   to="/profile"
-                  className="flex items-center text-gray-500 px-3 py-2 text-sm font-medium hover:text-indigo-600"
-                >
-                  <User className="w-5 h-5 mr-1" /> Profile
-                </Link>
+                  icon={<User />}
+                  label="Profile"
+                  active={location.pathname === "/profile"}
+                />
               )}
             </div>
 
-            {/* User Info and Logout */}
-            <div className="hidden sm:flex sm:items-center">
-              <span className="block text-lg font-bold text-gray-800 px-3 mr-4">
-                Welcome, {user?.username || "Guest"}
-                {user?.role && (
-                  <span className="ml-2 px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800 font-normal">
-                    {user.role}
+            {/* Right - User Info */}
+            <div className="hidden sm:flex items-center space-x-4">
+              {/* Avatar + Info */}
+              <div className="flex items-center space-x-2">
+                <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold">
+                  {user?.username?.charAt(0).toUpperCase() || "G"}
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-gray-800 text-sm">
+                    {user?.username || "Guest"}
                   </span>
-                )}
-              </span>
+                  {user?.role && (
+                    <span className="px-2 py-0.5 text-xs rounded-full bg-indigo-100 text-indigo-700 w-fit">
+                      {user.role}
+                    </span>
+                  )}
+                </div>
+              </div>
               <button
                 onClick={logOut}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition"
               >
                 Logout
               </button>
@@ -132,13 +153,9 @@ function Navbar() {
             <div className="sm:hidden flex items-center">
               <button
                 onClick={toggleMobileMenu}
-                className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                className="text-gray-600 hover:text-indigo-600 focus:outline-none"
               >
-                {isMobileMenuOpen ? (
-                  <X className="w-6 h-6" />
-                ) : (
-                  <Menu className="w-6 h-6" />
-                )}
+                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
           </div>
@@ -148,72 +165,75 @@ function Navbar() {
         {isMobileMenuOpen && (
           <div className="sm:hidden bg-gray-50 border-t border-gray-200">
             <div className="px-2 py-3 space-y-1">
-              <Link
+              <NavLink
                 to="/"
-                className="flex items-center text-gray-900 px-3 py-2 text-sm font-medium hover:text-indigo-600"
-              >
-                <Home className="w-5 h-5 mr-1" /> Dashboard
-              </Link>
-              {user &&
-                (user.role === "admin" ||
-                  user.role === "employee") && (
-                  <Link
-                    to="/inventory"
-                    className="flex items-center text-gray-500 px-3 py-2 text-sm font-medium hover:text-indigo-600"
-                  >
-                    <Box className="w-5 h-5 mr-1" /> Inventory
-                  </Link>
-                )}
-              <Link
+                icon={<Home />}
+                label="Dashboard"
+                active={location.pathname === "/"}
+              />
+              {(user?.role === "admin" || user?.role === "employee") && (
+                <NavLink
+                  to="/inventory"
+                  icon={<Box />}
+                  label="Inventory"
+                  active={location.pathname === "/inventory"}
+                />
+              )}
+              <NavLink
                 to="/sales"
-                className="flex items-center text-gray-500 px-3 py-2 text-sm font-medium hover:text-indigo-600"
-              >
-                <ShoppingCart className="w-5 h-5 mr-1" /> Sales
-              </Link>
-              {user && user.role === "admin" && (
+                icon={<ShoppingCart />}
+                label="Sales"
+                active={location.pathname === "/sales"}
+              />
+              {user?.role === "admin" && (
                 <>
-                  <Link
+                  <NavLink
                     to="/reports"
-                    className="flex items-center text-gray-500 px-3 py-2 text-sm font-medium hover:text-indigo-600"
-                  >
-                    <BarChart className="w-5 h-5 mr-1" /> Reports
-                  </Link>
-                  <Link
+                    icon={<BarChart />}
+                    label="Reports"
+                    active={location.pathname === "/reports"}
+                  />
+                  <NavLink
                     to="/admin"
-                    className="flex items-center text-gray-500 px-3 py-2 text-sm font-medium hover:text-indigo-600"
-                  >
-                    <Settings className="w-5 h-5 mr-1" /> Admin Panel
-                  </Link>
+                    icon={<Settings />}
+                    label="Admin Panel"
+                    active={location.pathname === "/admin"}
+                  />
                 </>
               )}
-              {user && user.role === "employee" && (
-                <Link
+              {user?.role === "employee" && (
+                <NavLink
                   to="/tasks"
-                  className="flex items-center text-gray-500 px-3 py-2 text-sm font-medium hover:text-indigo-600"
-                >
-                  <ClipboardList className="w-5 h-5 mr-1" /> Tasks
-                </Link>
+                  icon={<ClipboardList />}
+                  label="Tasks"
+                  active={location.pathname === "/tasks"}
+                />
               )}
-              {user && user.role === "user" && (
-                <Link
+              {user?.role === "user" && (
+                <NavLink
                   to="/profile"
-                  className="flex items-center text-gray-500 px-3 py-2 text-sm font-medium hover:text-indigo-600"
-                >
-                  <User className="w-5 h-5 mr-1" /> Profile
-                </Link>
+                  icon={<User />}
+                  label="Profile"
+                  active={location.pathname === "/profile"}
+                />
               )}
-              <div className="border-t border-gray-200 mt-2 pt-2">
-                <span className="block text-sm text-gray-500 px-3">
-                  Welcome {user?.username || "Guest"}
+              <div className="border-t border-gray-200 mt-3 pt-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold">
+                    {user?.username?.charAt(0).toUpperCase() || "G"}
+                  </div>
+                  <span className="text-gray-700 text-sm font-medium">
+                    {user?.username || "Guest"}
+                  </span>
                   {user?.role && (
-                    <span className="ml-2 px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">
+                    <span className="px-2 py-0.5 text-xs rounded-full bg-indigo-100 text-indigo-700">
                       {user.role}
                     </span>
                   )}
-                </span>
+                </div>
                 <button
                   onClick={logOut}
-                  className="block w-full bg-indigo-600 text-white px-4 py-2 mt-2 rounded-md text-sm font-medium text-center hover:bg-indigo-700 cursor-pointer"
+                  className="block w-full bg-indigo-600 text-white px-4 py-2 mt-3 rounded-md text-sm font-medium hover:bg-indigo-700 transition"
                 >
                   Logout
                 </button>

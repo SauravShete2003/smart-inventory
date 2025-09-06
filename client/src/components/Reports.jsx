@@ -1,10 +1,17 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
 import api from "../utils/api";
 import { getJwtToken } from "../utils/common";
 import toast, { Toaster } from "react-hot-toast";
 import Navbar from "./Navbar";
+import {
+  TrendingUp,
+  BarChart3,
+  Calendar,
+  AlertTriangle,
+  CheckCircle,
+  Package,
+} from "lucide-react";
 
 const Reports = () => {
   const [salesData, setSalesData] = useState([]);
@@ -22,15 +29,12 @@ const Reports = () => {
       }
 
       try {
-        // Fetch inventory data
         const inventoryResponse = await api.get("/api/inventories");
         setInventoryData(inventoryResponse.data);
 
-        // Fetch sales data
         const salesResponse = await api.get("/api/sales");
         setSalesData(salesResponse.data.sales);
 
-        // Fetch sales statistics
         const statsResponse = await api.get("/sales/stats");
         setStats(statsResponse.data);
       } catch (error) {
@@ -46,45 +50,32 @@ const Reports = () => {
 
   const monthlySalesData = {
     labels: [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
+      "Jan","Feb","Mar","Apr","May","Jun",
+      "Jul","Aug","Sep","Oct","Nov","Dec",
     ],
     datasets: [
       {
         label: "Monthly Sales",
         data: Array(12)
           .fill(0)
-          .map((_, index) => {
-            return salesData
+          .map((_, index) =>
+            salesData
               .filter((sale) => new Date(sale.date).getMonth() === index)
-              .reduce((sum, sale) => sum + sale.total, 0);
-          }),
-        backgroundColor: "rgba(75, 192, 192, 0.6)",
+              .reduce((sum, sale) => sum + sale.total, 0)
+          ),
+        backgroundColor: "rgba(99, 102, 241, 0.6)",
+        borderRadius: 6,
       },
     ],
   };
 
   const topSellingItems = salesData
     .reduce((acc, sale) => {
-      if (!sale || !sale.item) return acc;
-      
-      const existingItem = acc.find(
-        (item) => item.name === sale.item.name
-      );
-      
-      if (existingItem) {
-        existingItem.quantity += sale.quantity || 0;
-        existingItem.total += sale.total || 0;
+      if (!sale?.item) return acc;
+      const existing = acc.find((i) => i.name === sale.item.name);
+      if (existing) {
+        existing.quantity += sale.quantity || 0;
+        existing.total += sale.total || 0;
       } else {
         acc.push({
           name: sale.item.name,
@@ -103,7 +94,8 @@ const Reports = () => {
       {
         label: "Quantity Sold",
         data: topSellingItems.map((item) => item.quantity),
-        backgroundColor: "rgba(54, 162, 235, 0.6)",
+        backgroundColor: "rgba(34, 197, 94, 0.6)",
+        borderRadius: 6,
       },
     ],
   };
@@ -111,138 +103,141 @@ const Reports = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-indigo-500 border-solid"></div>
       </div>
     );
   }
 
   return (
     <>
-      <div className="flex">
-        <div className="w-full py-6 sm:px-6 lg:px-8">
+      <div className="flex min-h-screen bg-gray-50">
+        <div className="w-full py-8 px-6 lg:px-10">
           <Navbar />
-          <h1 className="text-2xl font-semibold text-gray-900 mb-6">Reports</h1>
-          
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">📊 Reports</h1>
+
           {/* Stats Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900">Total Sales</h3>
-              <p className="mt-2 text-3xl font-bold text-indigo-600">
-                ₹{stats?.totalSales?.toLocaleString() || 0}
-              </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white shadow-md rounded-2xl p-6 flex items-center space-x-4">
+              <TrendingUp className="text-indigo-500 w-10 h-10" />
+              <div>
+                <h3 className="text-sm text-gray-500">Total Sales</h3>
+                <p className="text-2xl font-bold text-indigo-600">
+                  ₹{stats?.totalSales?.toLocaleString() || 0}
+                </p>
+              </div>
             </div>
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900">Monthly Sales</h3>
-              <p className="mt-2 text-3xl font-bold text-green-600">
-                ₹{stats?.monthlySales?.toLocaleString() || 0}
-              </p>
+            <div className="bg-white shadow-md rounded-2xl p-6 flex items-center space-x-4">
+              <Calendar className="text-green-500 w-10 h-10" />
+              <div>
+                <h3 className="text-sm text-gray-500">Monthly Sales</h3>
+                <p className="text-2xl font-bold text-green-600">
+                  ₹{stats?.monthlySales?.toLocaleString() || 0}
+                </p>
+              </div>
             </div>
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900">Weekly Sales</h3>
-              <p className="mt-2 text-3xl font-bold text-blue-600">
-                ₹{stats?.weeklySales?.toLocaleString() || 0}
-              </p>
+            <div className="bg-white shadow-md rounded-2xl p-6 flex items-center space-x-4">
+              <BarChart3 className="text-blue-500 w-10 h-10" />
+              <div>
+                <h3 className="text-sm text-gray-500">Weekly Sales</h3>
+                <p className="text-2xl font-bold text-blue-600">
+                  ₹{stats?.weeklySales?.toLocaleString() || 0}
+                </p>
+              </div>
             </div>
           </div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Monthly Sales
-                </h3>
-                <div className="mt-5">
-                  <Bar
-                    data={monthlySalesData}
-                    options={{ responsive: true, maintainAspectRatio: false }}
-                  />
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="bg-white shadow-md rounded-2xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Monthly Sales Overview
+              </h3>
+              <div className="h-80">
+                <Bar
+                  data={monthlySalesData}
+                  options={{ responsive: true, maintainAspectRatio: false }}
+                />
               </div>
             </div>
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Top Selling Items
-                </h3>
-                <div className="mt-5">
-                  <Bar
-                    data={topSellingItemsData}
-                    options={{ responsive: true, maintainAspectRatio: false }}
-                  />
-                </div>
+            <div className="bg-white shadow-md rounded-2xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Top Selling Items
+              </h3>
+              <div className="h-80">
+                <Bar
+                  data={topSellingItemsData}
+                  options={{ responsive: true, maintainAspectRatio: false }}
+                />
               </div>
             </div>
           </div>
-          <div className="mt-8 bg-white shadow overflow-hidden sm:rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Inventory Status
-              </h3>
-              <div className="mt-5">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Item
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Current Stock
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Threshold
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {inventoryData.map((item) => (
-                      <tr key={item._id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+
+          {/* Inventory Status */}
+          <div className="bg-white shadow-md rounded-2xl p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+              <Package className="text-gray-600" /> Inventory Status
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full border border-gray-200 rounded-lg">
+                <thead className="bg-gray-100">
+                  <tr>
+                    {["Item", "Current Stock", "Threshold", "Status"].map(
+                      (head) => (
+                        <th
+                          key={head}
+                          className="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider"
+                        >
+                          {head}
+                        </th>
+                      )
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {inventoryData.map((item) => {
+                    const isLow = item.quantity < item.threshold;
+                    const isMedium =
+                      item.quantity >= item.threshold &&
+                      item.quantity < item.threshold * 2;
+
+                    return (
+                      <tr key={item._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
                           {item.name}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 text-sm text-gray-700">
                           {item.quantity}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 text-sm text-gray-700">
                           {item.threshold}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 text-sm">
                           <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              item.quantity < item.threshold
-                                ? "bg-red-100 text-red-800"
-                                : item.quantity < item.threshold * 2
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-green-100 text-green-800"
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                              isLow
+                                ? "bg-red-100 text-red-700"
+                                : isMedium
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-green-100 text-green-700"
                             }`}
                           >
-                            {item.quantity < item.threshold
+                            {isLow ? (
+                              <AlertTriangle className="w-4 h-4 mr-1" />
+                            ) : (
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                            )}
+                            {isLow
                               ? "Low Stock"
-                              : item.quantity < item.threshold * 2
+                              : isMedium
                               ? "Medium Stock"
                               : "Good Stock"}
                           </span>
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
