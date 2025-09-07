@@ -32,13 +32,16 @@ app.use(express.static('dist', {
   
 
 app.use(cors({
-    origin: '*'
-  }));
+  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
   
 
 const mongoDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/smart-inventory', {
+        await mongoose.connect(process.env.MONGO_URL , {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
