@@ -13,7 +13,7 @@ import { getSalesStats } from './controllers/salesController.js';
 import { authenticateToken } from './middleware/auth.js';
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
