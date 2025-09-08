@@ -59,7 +59,7 @@ const Sales = () => {
     }
 
     try {
-      const inventoryResponse = await api.get("/api/inventories").catch(() => ({
+      const inventoryResponse = await api.get("/inventories").catch(() => ({
         data: [
           { _id: "1", name: "Laptop", price: 1200, category: "Electronics", quantity: 10 },
           { _id: "2", name: "Smartphone", price: 800, category: "Electronics", quantity: 15 },
@@ -68,7 +68,7 @@ const Sales = () => {
       }));
       setInventory(inventoryResponse.data);
 
-      const salesResponse = await api.get("/api/sales").catch(() => ({
+      const salesResponse = await api.get("/sales").catch(() => ({
         data: {
           sales: [
             { _id: "1", saleDate: "2023-05-15", item: { name: "Laptop", price: 1200 }, quantity: 1, total: 1200 },
@@ -159,7 +159,7 @@ const Sales = () => {
     }
 
     try {
-      await api.post("/api/sales", newSale, { headers: { Authorization: token } }).catch(() => ({
+      await api.post("/sales", newSale, { headers: { Authorization: token } }).catch(() => ({
         data: { success: true },
       }));
       setNewSale({ itemId: "", quantity: 0 });

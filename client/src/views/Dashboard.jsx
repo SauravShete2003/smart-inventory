@@ -32,12 +32,12 @@ const Dashboard = () => {
     }
 
     try {
-      const inventoryResponse = await api.get('/api/inventories', {
+      const inventoryResponse = await api.get('/inventories', {
         headers: { Authorization: token },
       });
       setInventoryData(inventoryResponse.data);
 
-      const salesResponse = await api.get('/api/sales', {
+      const salesResponse = await api.get('/sales', {
         headers: { Authorization: token },
       });
       setSalesData(salesResponse.data.sales);

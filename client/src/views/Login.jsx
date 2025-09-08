@@ -12,10 +12,10 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError("");
 
     try {
-      const response = await api.post("/api/auth/login", { email, password });
+      const response = await api.post("/auth/login", { email, password });
       if (response.data && response.data.token) {
         localStorage.setItem("smart-inventory-user-token", response.data.token);
         localStorage.setItem(
